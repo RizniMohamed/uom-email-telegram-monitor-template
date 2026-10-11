@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Syntax
+        run: python -m compileall -q src tests
+      - name: Offline unit tests
+        run: python -m unittest discover -s tests -t . -v
+      - name: Validate startup configuration without network
+        env:
+          UOM_USERNAME: ci-user
+          UOM_PASSWORD: ci-dummy-password
+          TELEGRAM_BOT_TOKEN: '123:ci_dummy_token'
+          TELEGRAM_CHAT_ID: '123'
+          UOM_STATE_FILE: ${{ runner.temp }}/uom-ci-state.json
+        run: python -m uom_email_monitor --check-config
+      - name: Lint
+        run: python -m ruff check src tests
+      - name: Build package
+        run: python -m build --wheel
+      - name: Termux script syntax
+        run: |
+          bash -n deployment/termux/uom.sh
+          bash -n deployment/termux/boot.sh

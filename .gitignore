@@ -1,0 +1,33 @@
+# Credentials, local data, and preserved private documents
+.env
+*.env
+.env.*
+!.env.example
+settings.py
+old/
+*state*.json
+*.tmp
+*.lock
+*.sqlite*
+*.db
+*.eml
+*.log
+*.pem
+*.key
+backups/
+
+# Python and tooling outputs
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+.vscode/
+.idea/
+*.zip
